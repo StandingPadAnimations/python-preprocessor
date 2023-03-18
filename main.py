@@ -22,6 +22,9 @@ class Section:
     def add_else(self, else_sec: 'Section'):
         self.else_section = else_sec
 
+"""
+Preprocess the passed file, and return all sections
+"""
 def preprocess(file: TextIO) -> List[Section]:
     sections: List[Section] = [Section("__main__")]
     section: Section = None
@@ -49,6 +52,9 @@ def preprocess(file: TextIO) -> List[Section]:
         section.append(line)
     return sections
 
+"""
+Return all defined sections based on the variables used
+"""
 def get_defined(sections: List[Section], defined_vars: List[str]) -> List[Section]:
     final_sections: List[Section] = []
     for section in sections:
@@ -75,16 +81,20 @@ def main():
     with open(preprocess_file) as file:
         for line in file:
             defined_vars.append(line.strip(" "))
-
+    
+    sections: List[Section] = []
     if input_file.is_dir():
         raise Exception("Directories not supported yet!")
     else:
         with open(input_file) as file:
-            sections: List[Section] = preprocess(file)
+            sections = preprocess(file)
             sections = get_defined(sections, defined_vars)
+        
+        output = Path("preprocessed_files") / input_file
+        output.parent.mkdir(parents=True, exist_ok=True)
+        with open(output, "w") as fp:
             for section in sections:
-                print(section.buffer)
-
+                fp.writelines(section.buffer)
 
 if __name__ == "__main__":
     main()
