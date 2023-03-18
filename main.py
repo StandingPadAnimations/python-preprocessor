@@ -82,10 +82,19 @@ def main():
         for line in file:
             defined_vars.append(line.strip(" "))
     
-    sections: List[Section] = []
     if input_file.is_dir():
-        raise Exception("Directories not supported yet!")
+        for py_file in input_file.glob("**/*.py"):
+            sections: List[Section] = []
+            with open(py_file) as file:
+                sections = preprocess(file)
+                sections = get_defined(sections, defined_vars)
+            output = Path("preprocessed_files") / py_file
+            output.parent.mkdir(parents=True, exist_ok=True)
+            with open(output, "w") as fp:
+                for section in sections:
+                    fp.writelines(section.buffer)
     else:
+        sections: List[Section] = []
         with open(input_file) as file:
             sections = preprocess(file)
             sections = get_defined(sections, defined_vars)
